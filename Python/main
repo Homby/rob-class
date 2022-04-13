@@ -1,0 +1,208 @@
+import re
+
+import sys
+
+import base64
+
+import time
+
+from textwrap import dedent
+
+import requests
+
+from random import choice
+
+from bs4 import BeautifulSoup
+
+from urllib.parse import urlencode
+
+user_agent = [
+
+    "Mozilla/5.0 (Linux; Android 9; V1945A Build/PKQ1.190626.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/94.0.4606.71 Mobile Safari/537.36",
+
+]
+
+headers = {
+
+    'Host': 'zjkgjw.educationgroup.cn',
+
+    'Upgrade-Insecure-Requests': '1',
+
+    'Origin': 'https://zjkgjw.educationgroup.cn',
+
+    'Content-Type': 'application/x-www-form-urlencoded',
+
+    'User-Agent': choice(user_agent),
+
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+
+    'Referer': 'https://zjkgjw.educationgroup.cn/gzasc_jsxsd/',
+
+    'Accept-Language': 'zh-CN,zh;q=0.9',
+
+    'Connection': 'keep-alive'
+
+}
+
+try:
+
+    # 获取信息
+
+    list_info = []  # info列表
+
+    s = requests.session()
+
+    data = {
+
+        "sEcho": "1",
+
+        "iColumns": "13",
+
+        "sColumns": "",
+
+        "iDisplayStart": "0",
+
+        "iDisplayLength": "15",
+
+        "mDataProp_0": "kch",
+
+        "mDataProp_1": "kcmc",
+
+        "mDataProp_2": "xf",
+
+        "mDataProp_3": "skls",
+
+        "mDataProp_4": "sksj",
+
+        "mDataProp_5": "skdd",
+
+        "mDataProp_6": "xqmc",
+
+        "mDataProp_7": "xxrs",
+
+        "mDataProp_8": "xkrs",
+
+        "mDataProp_9": "syrs",
+
+        "mDataProp_10": "ctsm",
+
+        "mDataProp_11": "szkcflmc",
+
+        "mDataProp_12": "czOper",
+
+    }
+
+    # 登录
+
+    def login():
+
+        login_url = "https://zjkgjw.educationgroup.cn/gzasc_jsxsd/xk/LoginToXk"
+
+        values = {'userAccoun': username, 'userPassword': ''}
+
+        st = base64.b64encode(bytes(username, 'utf8')).decode(
+
+        ) + '%%%' + base64.b64encode(bytes(password, 'utf8')).decode()
+
+        values['encoded'] = st
+
+        postdata = urlencode(values).encode('utf-8')
+
+        a = s.post(login_url, data=postdata, headers=headers)
+
+        # print(a.text)
+
+    def url():
+
+        a = s.get('https://zjkgjw.educationgroup.cn/gzasc_jsxsd/xsxk/xklc_list', headers=headers)
+
+        print("\n ", "正在读取抢课目标......", "\n")
+
+        print("获取到目标:")
+
+        print("[1]\t\t2021-2022-2公共通识类选修课第二轮选课\t", "时间:", "2022-03-03 12:30~2022-03-03 23:00\n\n")
+
+        time.sleep(3)
+
+        print("")
+
+        clas_url = re.search(r'xsxk.*"\s', a.text).group(0)[:-2]  # 截取选课ID
+
+        clas1_url = "https://zjkgjw.educationgroup.cn/gzasc_jsxsd/"
+
+        enter_url = clas1_url + clas_url  # 选课链接
+
+        a = s.get(enter_url, headers=headers)
+
+        my_url = "https://zjkgjw.educationgroup.cn/gzasc_jsxsd/xsxkkc/comeInGgxxkxk"
+
+        a = s.post(my_url, headers=headers)
+
+        rl = "https://zjkgjw.educationgroup.cn/gzasc_jsxsd/xsxkkc/xsxkGgxxkxk?kcxx=&skls=&skxq=&skjc=&sfym=true&sfct=false&szjylb=&sfxx=true"
+
+        a = s.post(rl, data, headers=headers)
+
+        print("读取全课程类别")
+
+        time.sleep(1)
+
+        print(a.text)
+
+        classs = re.search(r'创.*',a.text).group(0)
+
+        print("筛选 <创新类别>")
+
+        print(classs)
+
+        time.sleep(2)
+
+        go_url = "https://zjkgjw.educationgroup.cn/gzasc_jsxsd/xsxkkc/ggxxkxkOper?kcid=368834B3E9094E80B7F9346572995170&cfbs=null&jx0404id=202120222001670&xkzy=&trjf=&_=1646318112521"
+
+        a = s.post(go_url, data, headers=headers)
+
+        aaa = 300
+
+        while aaa:
+
+            aaa -= 1
+
+            print(a.text)
+
+            time.sleep(0.1)
+
+    # 登录
+
+    start = input("输入1登录抢课:")
+
+    username = ""
+
+    password = ""
+
+    print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<         正在登录          >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+    login()
+
+    time.sleep(1)
+
+    a = s.get('https://zjkgjw.educationgroup.cn/gzasc_jsxsd/framework/xsMain.jsp', headers=headers)
+
+    # print(a.text)
+
+    if a.status_code == 200:
+
+        print("\n ", " NGUBIN", "登录成功\n")
+
+        url()
+
+    else:
+
+            print("\n学号或密码错误，请稍后重试！\n")
+
+            sys.exit(0)
+
+except Exception as e:
+
+    print("[-] %s" % e)
+
+    sys.exit(0)
+
